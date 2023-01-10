@@ -9,6 +9,7 @@ namespace SolacePOC
         public static void Publish(int numMessages)
         {
             Producer producer = new Producer();
+            // For demo purposes only, DO NOT push connection details to repo
             producer.createConnection("tcps://mr-connection-x7dzv7fkvnf.messaging.solace.cloud:55443", "solace-poc", "solace-cloud-client", "avo7hoqan629ojc60esj6jehvv");
             
             Random rdn = new Random();
