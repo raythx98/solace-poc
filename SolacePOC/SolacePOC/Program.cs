@@ -1,32 +1,60 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿using System;
 
-using System;
-using static MessagingClient.Publisher;
-
-// using SolacePOC;
 namespace SolacePOC{
     class Program
     {
+        private static string usage =
+            "Usage: SolacePOC {type} \n" +
+            "type: \n\t" +
+                "singlesubscriber\n\t" +
+                "sharedsubscriber\n\t" +
+                "queuesubscriber {queueName}\n\t" +
+                "publisher {numMessages}";
         static void Main(string[] args)
         {
-            Random rdn = new Random();
-            string[] countries = { "singapore", "australia" };
-            for (int i = 0; i < 100; i++)
+            if (args.Length < 1)
             {
-                string message = rdn.Next(100000, 1000000).ToString();
-                string country = countries[rdn.Next(2)%2];
-                string carplate = String.Format("{0}{1}{2}{3}",
-                    Convert.ToChar('A'+rdn.Next(25)), 
-                    Convert.ToChar('A'+rdn.Next(25)), 
-                    rdn.Next(1000,10000), 
-                    Convert.ToChar('A'+rdn.Next(25)));
-                string userid = rdn.Next(100000, 1000000).ToString();
-                string topic = String.Format("getgo/{0}/booking/{1}/{2}",
-                    country, carplate, userid);
-                // Console.WriteLine(topic + message);
-                Publish(topic, message);
+                Console.WriteLine(usage);
+                Environment.Exit(1);
             }
-            
+            switch(args[0].ToLower()) 
+            {
+                case "singlesubscriber":
+                    new Subscriber("getgo/*/booking/>").Subscribe();
+                    break;
+                case "sharedsubscriber":
+                    new Subscriber("#share/backend/getgo/*/booking/>").Subscribe();
+                    break;
+                case "queuesubscriber":
+                    if (args.Length < 2)
+                    {
+                        Console.WriteLine(usage);
+                        Environment.Exit(1);
+                        break;
+                    }
+                    new QueueSubscriber(args[1]).Subscribe();
+                    break;
+                case "publisher":
+                    if (args.Length < 2)
+                    {
+                        Console.WriteLine(usage);
+                        Environment.Exit(1);
+                        break;
+                    }
+                    if (Int32.TryParse(args[1], out int j))
+                    {
+                        Publisher.Publish(j);
+                    }
+                    else
+                    {
+                        Console.WriteLine(usage);
+                    }
+                    break;
+                default:
+                    Console.WriteLine(usage);
+                    Environment.Exit(1);
+                    break;
+            }
         }
     }
 
